@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>J.A.R.V.I.S Dashboard</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}">
+
+<style>
+
+body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#050816;
+    font-family:Segoe UI;
+    overflow:hidden;
+}
+
+body::before{
+    content:'';
+    position:fixed;
+    width:200%;
+    height:200%;
+    background:
+    radial-gradient(
+        circle,
+        rgba(0,255,255,.15) 1px,
+        transparent 1px
+    );
+    background-size:40px 40px;
+    animation:move 20s linear infinite;
+}
+
+@keyframes move{
+    from{
+        transform:translate(0,0);
+    }
+    to{
+        transform:translate(-100px,-100px);
+    }
+}
+
+.card{
+
+    width:900px;
+
+    padding:40px;
+
+    border-radius:25px;
+
+    background:
+    rgba(255,255,255,.08);
+
+    backdrop-filter:blur(20px);
+
+    border:
+    1px solid rgba(255,255,255,.2);
+
+    text-align:center;
+
+    color:white;
+
+    z-index:1;
+}
+
+h1{
+
+    color:#00ffff;
+
+    font-size:50px;
+
+    margin-bottom:5px;
+}
+
+h3{
+
+    color:#cccccc;
+
+    margin-top:0;
+}
+
+.orb{
+
+    width:180px;
+
+    height:180px;
+
+    border-radius:50%;
+
+    margin:30px auto;
+
+    background:
+    radial-gradient(
+        circle,
+        #00ffff,
+        #001f3f
+    );
+
+    animation:
+    pulse 2s infinite;
+}
+
+@keyframes pulse{
+
+0%{
+
+    transform:scale(1);
+
+    box-shadow:
+    0 0 20px cyan;
+}
+
+50%{
+
+    transform:scale(1.1);
+
+    box-shadow:
+    0 0 100px cyan;
+}
+
+100%{
+
+    transform:scale(1);
+
+    box-shadow:
+    0 0 20px cyan;
+}
+}
+
+input{
+
+    width:80%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:10px;
+
+    margin-top:20px;
+
+    font-size:16px;
+}
+
+button{
+
+    margin:10px;
+
+    padding:12px 25px;
+
+    border:none;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    background:#00ffff;
+
+    color:black;
+
+    font-weight:bold;
+
+    transition:.3s;
+}
+
+button:hover{
+
+    transform:scale(1.05);
+}
+
+#status{
+
+    margin-top:25px;
+
+    padding:20px;
+
+    border-radius:15px;
+
+    background:#0d1224;
+
+    text-align:left;
+
+    min-height:150px;
+
+    overflow:auto;
+
+    line-height:1.6;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>J.A.R.V.I.S</h1>
+
+<h3>Just A Rather Very Intelligent System</h3>
+
+<div class="orb"></div>
+
+<h2>🟢 Welcome {{ username }}</h2>
+
+<input
+type="text"
+id="command"
+placeholder="Ask Jarvis anything...">
+
+<br>
+
+<button onclick="runCommand()">
+Execute
+</button>
+
+<button onclick="startVoice()">
+🎤 Speak
+</button>
+
+<div id="status">
+
+System Online... Ready to Assist.
+
+</div>
+
+</div>
+
+<script>
+
+async function runCommand(){
+
+    const cmd =
+    document.getElementById(
+        "command"
+    ).value;
+
+    document.getElementById(
+        "status"
+    ).innerHTML =
+    "🧠 Jarvis is thinking...";
+
+    const response =
+    await fetch(
+        "/command/" +
+        encodeURIComponent(cmd)
+    );
+
+    const data =
+    await response.json();
+
+    typeWriter(
+        data.answer
+    );
+
+    speakAnswer(
+        data.answer
+    );
+}
+
+function startVoice(){
+
+    const recognition =
+    new webkitSpeechRecognition();
+
+    recognition.lang =
+    "en-US";
+
+    recognition.start();
+
+    recognition.onresult =
+    async function(event){
+
+        const command =
+        event.results[0][0]
+        .transcript;
+
+        document.getElementById(
+            "command"
+        ).value =
+        command;
+
+        document.getElementById(
+            "status"
+        ).innerHTML =
+        "🎤 You said: " +
+        command;
+
+        const response =
+        await fetch(
+            "/command/" +
+            encodeURIComponent(
+                command
+            )
+        );
+
+        const data =
+        await response.json();
+
+        typeWriter(
+            data.answer
+        );
+
+        speakAnswer(
+            data.answer
+        );
+    };
+}
+
+function typeWriter(text){
+
+    const status =
+    document.getElementById(
+        "status"
+    );
+
+    status.innerHTML = "";
+
+    let i = 0;
+
+    const timer =
+    setInterval(() => {
+
+        status.innerHTML +=
+        text.charAt(i);
+
+        i++;
+
+        if(i >= text.length){
+
+            clearInterval(
+                timer
+            );
+        }
+
+    },15);
+}
+
+function speakAnswer(text){
+
+    window.speechSynthesis
+    .cancel();
+
+    const speech =
+    new SpeechSynthesisUtterance(
+        text
+    );
+
+    speech.rate = 1;
+
+    speech.pitch = 1;
+
+    speech.volume = 1;
+
+    window.speechSynthesis
+    .speak(speech);
+}
+
+</script>
+
+</body>
+
+</html>

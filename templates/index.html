@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Face Authentication</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="card">
+
+    <h1>AI Face Authentication</h1>
+
+    <video id="video"
+           autoplay
+           playsinline></video>
+
+    <canvas id="canvas"></canvas>
+
+    <button id="captureBtn">
+        Verify Face
+    </button>
+
+    <p id="status"></p>
+
+</div>
+
+<script src="{{ url_for('static', filename='camera.js') }}"></script>
+
+</body>
+</html>
